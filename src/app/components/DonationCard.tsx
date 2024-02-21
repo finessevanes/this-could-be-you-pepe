@@ -1,10 +1,24 @@
-import React, { useState } from "react";
+import React, { use, useState, useEffect } from "react";
+import { useWeb3Modal } from '@web3modal/wagmi/react'
+import { useContractRead, Abi } from "wagmi"
+import charityFundAbi from "../../../json/charityFundAbi.json"
 import ConfirmationModal from "../components/ConfirmationModal";
 import { DonationType } from "../../../utils/types"; // Ensure this path matches your project structure
+
+const abi: Abi = charityFundAbi as Abi;
+const CHARITY_FUND_ADDRESS = '0xbd58249f6352bffb210d9ad4c77d68fc871b00a8';
+
+enum DonationTier {
+  GOLD,
+  SILVER,
+  BRONZE,
+  WAGMI,
+}
 
 function DonationCard() {
   const [selectedTier, setSelectedTier] = useState<DonationType | ''>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { open } = useWeb3Modal()
 
   // Placeholder function for calculating ETH value
   const usdToEth = (usdAmount: number) => {
@@ -18,6 +32,12 @@ function DonationCard() {
   const handleTierChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedTier(e.target.value as DonationType);
   };
+
+  const { data, isError, isLoading } = useContractRead({
+    address: CHARITY_FUND_ADDRESS,
+    abi,
+    functionName: 'owner',
+  })
 
   return (
     <div className="relative py-3 sm:max-w-xl sm:mx-auto">
@@ -58,6 +78,7 @@ function DonationCard() {
                   onClick={handleDonateClick}>
                   Donate
                 </button>
+                <button onClick={() => open()}>Open Connect Modal</button>
               </div>
             </div>
           </div>
